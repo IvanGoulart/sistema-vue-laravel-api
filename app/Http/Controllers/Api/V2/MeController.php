@@ -13,7 +13,7 @@ use LaravelJsonApi\Core\Responses\ErrorResponse;
 
 class MeController extends Controller
 {
-       /**
+    /**
      * @param Request $request
      * @return JsonResponse
      */
@@ -31,11 +31,11 @@ class MeController extends Controller
         $input = $request->json()->all();
         $input['data']['id'] = (string)auth()->id();
         $input['data']['type'] = 'users';
-        
+
         $data = [
             'headers' => $headers
         ];
-    
+
         try {
 
             $user = User::find(1);
@@ -51,11 +51,7 @@ class MeController extends Controller
         }
     }
 
-    public function show($id){
-        dd("ola mundo cruel");
-    }
-
-     /**
+    /**
      * Update the specified resource.
      * Not named update because it conflicts with JsonApiController update method signature
      *
@@ -64,41 +60,14 @@ class MeController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $http = new Client(['verify' => false]);
+         $user = User::where('id', auth()->id())
+             ->update(['name' => $request->data['attributes']['name'], 
+             'email'=>$request->data['attributes']['email'] ]);
 
-        $headers = $this->parseHeaders($request->header());
-
-        $input = $request->json()->all();
-
-        $input['data']['id'] = (string)auth()->id();
-        $input['data']['type'] = 'users';
-
-        $data = [
-            'headers' => $headers,
-            'json' => $input,
-            'query' => $request->query()
-        ];
-        
-        try {
-            $response = $http->patch(route('v2.users.update', ['user' => auth()->id()]), $data);
-        } catch (ClientException $e) {
-            $errors = json_decode($e->getResponse()->getBody()->getContents(), true)['errors'];
-            $errors = collect($errors)->map(function ($error) {
-                return Error::fromArray($error);
-            });
-            return ErrorResponse::make($errors);
-        }
-
-        $responseBody = json_decode((string)$response->getBody(), true);
-        $responseStatus = $response->getStatusCode();
-        $responseHeaders = $this->parseHeaders($response->getHeaders());
-
-        unset($responseHeaders['Transfer-Encoding']);
-
-        return response()->json($responseBody, $responseStatus)->withHeaders($responseHeaders);
+        return $user;
     }
 
-      /**
+    /**
      * Parse headers to collapse internal arrays
      * TODO: move to helpers
      *

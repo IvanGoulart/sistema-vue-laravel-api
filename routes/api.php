@@ -32,9 +32,6 @@ Route::prefix('v2')->middleware('json.api')->group(function () {
     Route::get('/profile-show/{id}', [MeController::class, 'show'])->name('profile.show');
 });
 
-
-
-
 JsonApiRoute::server('v2')->prefix('v2')->resources(function (ResourceRegistrar $server) {
     $server->resource('users', JsonApiController::class);
     Route::get('me', [MeController::class, 'readProfile']);
